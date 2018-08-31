@@ -1,14 +1,22 @@
 import csv
 import numpy as np
 
-def     read_csv(file2read):
+def     get_data_from_csv(file2read):
+    """
+    
+    Read a csv file and return a list containing the data
+    Each line is an element of the list and for each element of the list each column is an element:
+    [[c1, c2, c3], [c1, c2, c3]]
+
+    """
     with open(file2read, newline='') as csvfile:
         csvreader = csv.reader(csvfile)
         nb_line = sum(1 for row in csvreader)
-        print("nb ligne = ", nb_line)
+    with open(file2read, newline='') as csvfile:
+        csvreader = csv.reader(csvfile)
         row = next(csvreader)
-        print("1st ligne : |{}|", row)
+        nb_column = len(row)
+        data = []
         for row in csvreader:
-            #print(', '.join(row))
-            nb_line += 1
-    print("\n-------------------------------\n")
+            data.append(row)
+    return data
