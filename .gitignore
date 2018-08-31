@@ -1,8 +1,7 @@
 # My Files #
 ############
 src/__pycache__/
-.swp
-.py.swp
+*.swp
 
 # Compiled source #
 ###################
