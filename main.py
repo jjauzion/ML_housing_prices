@@ -1,6 +1,6 @@
 # -*-coding:Utf-8 -*
 
-from src.get_data import get_data_from_csv
+import src.dataFct as dataFct
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,6 +22,8 @@ def     print_data(header, data):
     fig.tight_layout()
     plt.show()
 
-header, data = get_data_from_csv('dataset/train.csv')
+header, data = dataFct.get_from_csv('dataset/train.csv')
+header, data = dataFct.clean_data(header, data)
 print_data_sample(header, data)
+print("\nnb of features : ", len(header))
 #print_data(header, data)

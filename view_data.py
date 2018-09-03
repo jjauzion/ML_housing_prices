@@ -2,11 +2,13 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 df_train = pd.read_csv('dataset/train.csv')
-df_train['SalePrice'].describe()
+print(df_train['SalePrice'].describe())
+print(df_train['SaleType'].describe())
 plt.figure("test")
-sns.distplot(df_train['SalePrice']);
+sns.distplot(df_train['SalePrice'])
 plt.show()
 
 var = 'TotalBsmtSF'
@@ -36,7 +38,7 @@ plt.show()
 sns.set()
 cols = ['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', 'FullBath', 'YearBuilt']
 sns.pairplot(df_train[cols], height = 2.5)
-plt.show();
+plt.show()
 
 #missing data
 total = df_train.isnull().sum().sort_values(ascending=False)
@@ -46,8 +48,8 @@ print(missing_data.head(20))
 
 #droping missing data
 df_train = df_train.drop((missing_data[missing_data['Total'] > 1]).index,1)
-df_train = df_train.drop(df_train.loc[df_train['Electrical'].isnull()].index)
 df_train.isnull().sum().max() #just checking that there's no missing data missing...
+df_train = df_train.drop(df_train.loc[df_train['Electrical'].isnull()].index)
 
 #outliers
 #standardizing data
