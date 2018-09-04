@@ -37,12 +37,18 @@ def     clean_data(header, data):
     for column in sorted(notNumColumn, reverse=True):
             header.pop(column)
     print_NA(header, data)
-    column_NA = [2, 8, 25]
+    column_NA = [0, 2, 8, 25]
     for row in data:
         for column in sorted(column_NA, reverse=True):
             row.pop(column)
     for column in sorted(column_NA, reverse=True):
             header.pop(column)
     for row in data:
-        row = [int(column) for column in row]
+        row[:] = [int(column) for column in row]
     return header, data
+
+def     mean_norm_1d(lst):
+    return (lst - lst.mean()) / lst.std()
+
+def     mean_normalisation(data):
+    return np.apply_along_axis(mean_norm_1d, axis=0, arr=data)
