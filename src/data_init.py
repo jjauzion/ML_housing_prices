@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import src.hyper_parameters as hp
 
 def     get_from_csv(file2read):
     """
@@ -36,12 +37,18 @@ def     clean_data(header, data):
             row.pop(column)
     for column in sorted(notNumColumn, reverse=True):
             header.pop(column)
-    print_NA(header, data)
+    #print_NA(header, data)
     column_NA = [0, 2, 8, 25]
     for row in data:
         for column in sorted(column_NA, reverse=True):
             row.pop(column)
     for column in sorted(column_NA, reverse=True):
+            header.pop(column)
+    strongly_corr_var = [10, 23]
+    for row in data:
+        for column in sorted(strongly_corr_var, reverse=True):
+            row.pop(column)
+    for column in sorted(strongly_corr_var, reverse=True):
             header.pop(column)
     for row in data:
         row[:] = [int(column) for column in row]
@@ -52,3 +59,11 @@ def     mean_norm_1d(lst):
 
 def     mean_normalisation(data):
     return np.apply_along_axis(mean_norm_1d, axis=0, arr=data)
+
+def     split_data(data):
+    np.random.shuffle(data)
+    m = np.size(data, 0)
+    train_index = m * hp.data_split[0] // 100
+    cv_index = train_index + m * hp.data_split[1] // 100
+    indexes = [train_index, cv_index]
+    return tuple(np.split(data, indexes, axis=0))
