@@ -1,10 +1,14 @@
 import src.hyper_parameters as hp
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 def     cost_function(H, theta, Y, regul=0):
     m, n = Y.shape
     cost = 1 / (2 * m) * ((H - Y).T.dot((H - Y))) + regul / (2 * m) * theta[1:].T.dot(theta[1:])
+    if np.isnan(cost).any():
+        print("Divergence -> iteration interupted. Consider trying with a lower learning rate")
+        sys.exit()
     return cost[0, 0]
 
 def     gradient_descent(H, theta, X, Y, alpha):

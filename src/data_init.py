@@ -1,6 +1,7 @@
 import csv
 import numpy as np
 import src.hyper_parameters as hp
+import sklearn.preprocessing as sklpre
 
 def     get_from_csv(file2read):
     """
@@ -38,13 +39,13 @@ def     clean_data(header, data):
     for column in sorted(notNumColumn, reverse=True):
             header.pop(column)
     #print_NA(header, data)
-    column_NA = [0, 2, 8, 25]
+    column_NA = [2, 8, 25]
     for row in data:
         for column in sorted(column_NA, reverse=True):
             row.pop(column)
     for column in sorted(column_NA, reverse=True):
             header.pop(column)
-    strongly_corr_var = [10, 23]
+    strongly_corr_var = [11, 24]
     for row in data:
         for column in sorted(strongly_corr_var, reverse=True):
             row.pop(column)
@@ -55,15 +56,25 @@ def     clean_data(header, data):
     return header, data
 
 def     mean_norm_1d(lst):
+    if lst.std() == 0:
+        return lst
     return (lst - lst.mean()) / lst.std()
 
 def     mean_normalisation(data):
     return np.apply_along_axis(mean_norm_1d, axis=0, arr=data)
 
-def     split_data(data):
-    np.random.shuffle(data)
+def     split_data(data, shuffle="yes"):
+    """Split data set between training, cross validation and test set."""
+    if shuffle == "yes":
+        np.random.shuffle(data)
     m = np.size(data, 0)
     train_index = m * hp.data_split[0] // 100
     cv_index = train_index + m * hp.data_split[1] // 100
     indexes = [train_index, cv_index]
     return tuple(np.split(data, indexes, axis=0))
+
+def     add_poly_features(data, degree=2, start=0, feature_axis=1):
+    """Add polynomial features to the data set"""
+    poly = sklpre.PolynomialFeatures(degree)
+    enriched_data = poly.fit_transform(data[:,start:])
+    return np.concatenate((data[:,:start], enriched_data), axis=feature_axis)
