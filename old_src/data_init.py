@@ -31,7 +31,7 @@ def     print_NA(header ,data):
         print("{}.{} : {} NA".format(i, header[i], count))
 
 def     clean_data(header, data):
-    header, data = get_from_csv('dataset/train.csv')
+    header, data = get_from_csv('data/train.csv')
     notNumColumn = [2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 28, 27, 29, 30, 31, 32, 33, 35, 39, 40, 41, 42, 53, 55, 57, 58, 60, 63, 64, 65, 72, 73, 74, 78, 79]
     for row in data:
         for column in sorted(notNumColumn, reverse=True):

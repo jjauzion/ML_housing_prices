@@ -1,0 +1,7 @@
+{
+  "target_col": 81,
+  "raw_data_file": "data/train.csv",
+  "nan_filter_file": "data/train_nan_filter.csv",
+  "feature_selec_file": "data/train_cleaned.csv",
+  "cross_correlation_threshold": 0.9
+}

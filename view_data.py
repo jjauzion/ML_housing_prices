@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-df_train = pd.read_csv('dataset/train.csv')
+df_train = pd.read_csv('data/train.csv')
 print(df_train['SalePrice'].describe())
 print(df_train['SaleType'].describe())
-plt.figure("test")
+plt.figure("distplot")
 sns.distplot(df_train['SalePrice'])
 plt.show()
 
@@ -37,7 +37,7 @@ plt.show()
 
 sns.set()
 cols = ['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', 'FullBath', 'YearBuilt']
-sns.pairplot(df_train[cols], height = 2.5)
+sns.pairplot(df_train[cols], height=2.5)
 plt.show()
 
 #missing data
@@ -61,6 +61,6 @@ print(low_range)
 print('\nouter range (high) of the distribution:')
 print(high_range)
 #deleting points (outliers in scatter plot GrLivArea vs SalePrice)
-df_train.sort_values(by = 'GrLivArea', ascending = False)[:2]
+df_train.sort_values(by='GrLivArea', ascending=False)[:2]
 df_train = df_train.drop(df_train[df_train['Id'] == 1299].index)
 df_train = df_train.drop(df_train[df_train['Id'] == 524].index)
