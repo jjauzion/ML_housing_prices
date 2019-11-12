@@ -4,16 +4,27 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
 
-data_file = Path("data/train.csv")
+from src import toolbox
+
+parse = argparse.ArgumentParser()
+parse.add_argument("file", help="Configuration file, json format")
+parse.add_argument("-o", "--output", default="data/dataset_cleaned.csv", type=str,
+                   help="Output file for the cleaned dataset")
+parse.add_argument("-yf", "--force", action="store_true", help="Force 'yes' answer to any prompt")
+args = parse.parse_args()
+
+data_conf = toolbox.DataConf()
+try:
+    data_conf.import_from_json(args.file)
+except Exception as err:
+    print(f"Error: can't read json configuration file '{Path(args.file)}' because: {err.__class__.__name__}:{err}")
+    exit(0)
+data_conf = Path("data/train.csv")
 threshold = 0.9
 target_col = 81
-non_numeric_col = [2, 5, ]
 non_informative_col = []
 output_file = Path("data/data_cleaned.csv")
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-v", "--verbose", type=int, choices=[0, 1, 2], default=1, help="Verbosity level")
-args = parser.parse_args()
 
 target_col_l = str(target_col) + "_l"
 df = pd.read_csv(data_file, header=None, names=list(range(32)))

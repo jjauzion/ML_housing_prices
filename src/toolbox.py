@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+from . import error_lib
+
 
 class DataConf:
 
@@ -12,8 +14,11 @@ class DataConf:
         self.cross_correlation_threshold = None
 
     def import_from_json(self, file):
-        with Path(file).open(mode='r', encoding='utf-8') as fp:
-            conf = json.load(fp)
+        try:
+            with Path(file).open(mode='r', encoding='utf-8') as fp:
+                conf = json.load(fp)
+        except json.JSONDecodeError as err:
+            raise error_lib.FileError(errtype=f"{err.__class__.__name__}", file=str(Path(file)), message=str(err))
         self.tcol = conf["target_col"]
         self.raw_data_file = Path(conf["raw_data_file"])
         self.nan_filter_file = Path(conf["nan_filter_file"])
