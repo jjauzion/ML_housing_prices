@@ -1,7 +1,17 @@
 {
-  "target_col": 81,
-  "raw_data_file": "data/train.csv",
-  "nan_filter_file": "data/train_nan_filter.csv",
-  "feature_selec_file": "data/train_cleaned.csv",
-  "cross_correlation_threshold": 0.9
+  "target_col": "SalePrice",
+  "raw_dataset": "data/train.csv",
+  "cleaned_dataset": "data/train_cleaned.csv",
+  "numeric_cat_column": ["MSSubClass", "OverallCond", "YrSold", "MoSold"],
+  "nan_column_threshold": 0.005,
+  "cross_correlation_threshold": 0.9,
+  "feature_type": {
+    "useless": [],
+    "nominal": [],
+    "ordinal": [],
+    "binary": [],
+    "count": [],
+    "time": [],
+    "interval": []
+  }
 }

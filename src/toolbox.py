@@ -8,10 +8,12 @@ class DataConf:
 
     def __init__(self):
         self.tcol = None
-        self.raw_data_file = None
-        self.nan_filter_file = None
-        self.feature_selec_file = None
+        self.raw_dataset = None
+        self.cleaned_dataset = None
+        self.nan_column_threshold = None
         self.cross_correlation_threshold = None
+        self.numeric_cat_column = None
+        self.feature_type = None
 
     def import_from_json(self, file):
         try:
@@ -20,16 +22,16 @@ class DataConf:
         except json.JSONDecodeError as err:
             raise error_lib.FileError(errtype=f"{err.__class__.__name__}", file=str(Path(file)), message=str(err))
         self.tcol = conf["target_col"]
-        self.raw_data_file = Path(conf["raw_data_file"])
-        self.nan_filter_file = Path(conf["nan_filter_file"])
-        self.feature_selec_file = Path(conf["feature_selec_file"])
+        self.raw_dataset = Path(conf["raw_dataset"])
+        self.cleaned_dataset = Path(conf["cleaned_dataset"])
+        self.nan_column_threshold = conf["nan_column_threshold"]
         self.cross_correlation_threshold = conf["cross_correlation_threshold"]
+        self.numeric_cat_column = conf["numeric_cat_column"]
+        self.feature_type = conf["feature_type"]
 
     def __repr__(self):
-        ret = f"Target column = {self.tcol}\n"
-        ret += f"raw_data_file = {self.raw_data_file}\n"
-        ret += f"nan_filter_file = {self.nan_filter_file}\n"
-        ret += f"feature_selec_file = {self.feature_selec_file}\n"
-        ret += f"cross_correlation_threshold = {self.cross_correlation_threshold}\n"
+        ret = ""
+        for attribute in self.__dict__:
+            ret += f'{attribute}: {getattr(self, attribute)}\n'
         return ret
 
