@@ -48,7 +48,11 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     corr_list = feature_corr.where(np.tril(feature_corr, k=-1).astype(np.bool)).stack().sort_values(ascending=False)
     top_cor = corr_list[corr_list > threshold]
     end = False
+    # get col2del
     while not end:
+        # print
+        # prompt for yes or new threshold
+        # get col2del
         col2del = non_informative_col
         for elm in top_cor.index:
             if elm[0] not in col2del and elm[1] not in col2del:
