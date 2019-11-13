@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -24,7 +25,7 @@ def categorize_column(df, numeric_cat_column=None, inplace=False):
 
 
 def features_selection(dataset, output, target_col, numeric_cat_column=None, header=0,
-                       threshold=0.9, non_informative_col=None, verbose=1):
+                       threshold=0.9, non_informative_col=None, verbose=1, force=False):
     """
 
     :param dataset:             [str] Dataset file, csv format expected.
@@ -34,7 +35,8 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     :param header:              [int or None] Row number to use as the column names and start of the data.
     :param threshold:
     :param non_informative_col: [list]
-    :param verbose:             [0 or 1 or 2] Verbosity level
+    :param force:               [Bool] If True, enforce "yes" answer to any prompt
+    :param verbose:             [0 or 1 or 2] Verbosity level. Note that a verbosity of 0 will set force param to True
     :return:
     """
     df = pd.read_csv(dataset, header=header)
@@ -42,27 +44,36 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     corr = df.corr()
     feature_corr = corr.drop(target_col)
     feature_corr = feature_corr.drop(target_col, axis=1)
-    target_corr = corr[target_col].drop(target_col)
-    corr_list = []
-    for i, col in feature_corr.iteritems():
-        for j, val in col.iteritems():
-            if j >= i:
-                feature_corr[i][j] = 0
+    target_corr = corr[target_col].drop(target_col).sort_value(ascending=False)
+    corr_list = feature_corr.where(np.tril(feature_corr, k=-1).astype(np.bool)).stack().sort_values(ascending=False)
+    top_cor = corr_list[corr_list > threshold]
+    end = False
+    while not end:
+        col2del = non_informative_col
+        for elm in top_cor.index:
+            if elm[0] not in col2del and elm[1] not in col2del:
+                if target_corr[elm[0]] < target_corr[elm[1]]:
+                    col2del.append(elm[0])
+                else:
+                    col2del.append(elm[1])
+        if verbose > 0:
+            print("Feature correlation to the target:\n", target_corr)
+            print("Correlated features:\n", top_cor)
+            print("List of column that should be deleted: {}".format(col2del))
+        print("\nDo you want to delete the feature selected above? This will create a new dataset, no data loss there!")
+        end = input("Type 'yes' to confirm OR 'exit' OR enter a new threshold value (val between 0 and 1).\n")
+        if end == "exit":
+            exit(0)
+        elif end != "yes":
+            try:
+                threshold = float(end)
+                if not (0 <= threshold <= 1):
+                    raise ValueError(f"{end} is not a valid threshold. Threshold shall be between 0 and 1")
+            except ValueError:
+                print(f"{end} is not a valid threshold. Threshold shall be between 0 and 1")
+                threshold = threshold
             else:
-                corr_list.append(feature_corr[i][j])
-    top_cor = feature_corr.unstack().sort_values(ascending=False)
-    top_cor = top_cor[top_cor > threshold]
-    col2del = non_informative_col
-    for elm in top_cor.index:
-        if elm[0] not in col2del and elm[1] not in col2del:
-            if target_corr[elm[0]] < target_corr[elm[1]]:
-                col2del.append(elm[0])
-            else:
-                col2del.append(elm[1])
-    if verbose > 0:
-        print("Feature correlation to the target:\n", target_corr)
-        print("Correlated features:\n", top_cor)
-        print("List of column that should be deleted: {}".format(col2del))
+                top_cor = corr_list[corr_list > threshold]
     if verbose > 1:
         fig1 = plt.figure()
         target_corr.sort_values().plot.bar()
