@@ -1,5 +1,7 @@
 import pandas as pd
 
+from . import utils
+
 
 def nan_synthesis(df):
     null = df.isnull().sum()
@@ -28,19 +30,13 @@ def nan_filter(dataset, output, header=0, threshold=0.005, force=False, verbosit
     while end != "yes":
         print(synthesis)
         print("\nDo you want to delete the feature selected above? This will create a new dataset, no data loss there!")
-        end = input("Type 'yes' to confirm OR 'exit' OR enter a new percentage threshold (val between 0 and 1).\n")
+        end = utils.prompt_validation_or_new_threshold()
         if end == "exit":
             exit(0)
-        elif end != "yes":
-            try:
-                threshold = float(end)
-                if not (0 <= threshold <= 1):
-                    raise ValueError(f"{end} is not a valid percentage. Percentage shall be between 0 and 1")
-            except ValueError:
-                print(f"{end} is not a valid percentage. Percentage shall be between 0 and 1")
-                threshold = threshold
-            else:
-                synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
+        if end != "yes" and end is not None:
+            threshold = float(end)
+            synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
+            end = False
     df_clean = df.drop(columns=synthesis[synthesis["Delete Feature"]].index, axis=1)
     synthesis = nan_synthesis(df_clean)
     if verbosity > 0:
