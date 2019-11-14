@@ -92,10 +92,10 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     target_corr = corr[target_col].drop(target_col).sort_values(ascending=False)
     feature_corr_list = feature_corr_matrix.where(np.tril(feature_corr_matrix, k=-1).astype(np.bool)).stack()
     feature_corr_list = feature_corr_list.sort_values(ascending=False)
-    if verbose > 1:
+    if verbose > 1 and not force:
         plot_correlation(target_corr, feature_corr_list, feature_corr_matrix)
     correlated_feature = feature_corr_list[feature_corr_list > threshold]
-    end = False
+    end = False if not force else True
     col2del = get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
     while not end:
         if verbose > 0:
@@ -114,4 +114,4 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     df_out = df.drop(columns=col2del)
     df_out.to_csv(output, sep=',', index=False)
     if verbose > 0:
-        print("cleaned data saved to '{}'".format(output))
+        print("Dataset after correlation cleaning saved to '{}'".format(output))

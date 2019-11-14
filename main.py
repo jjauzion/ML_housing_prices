@@ -21,7 +21,6 @@ if __name__ == "__main__":
                               threshold=data_conf.nan_column_threshold, force=args.force, verbosity=args.verbosity)
         if not args.force and input("Do you want to continue with feature selection (y/n) ? ") == "n":
             exit(0)
-        print("\n")
         features_selection.features_selection(data_conf.cleaned_dataset,
                                               output=data_conf.cleaned_dataset,
                                               numeric_cat_column=data_conf.numeric_cat_column,
@@ -29,7 +28,8 @@ if __name__ == "__main__":
                                               target_col=data_conf.tcol,
                                               threshold=data_conf.cross_correlation_threshold,
                                               useless_feature=data_conf.feature_type["useless"],
-                                              verbose=args.verbosity)
+                                              verbose=args.verbosity,
+                                              force=args.force)
     except IOError as err:
         print(f"Error: {err}")
         exit(0)

@@ -39,10 +39,10 @@ def nan_filter(dataset, output, header=0, threshold=0.005, force=False, verbosit
             end = False
     df_clean = df.drop(columns=synthesis[synthesis["Delete Feature"]].index, axis=1)
     synthesis = nan_synthesis(df_clean)
-    if verbosity > 0:
+    if verbosity > 0 and not force:
         print("\nRemaining NaN:")
         print(synthesis)
         print("Deleting remaining observations with NaN (i.e. line)")
     df_clean = df_clean.dropna()
     df_clean.to_csv(output, sep=",", index=False)
-    print(f"Cleaned dataset saved to '{output}'")
+    print(f"Dataset after NaN filtering saved to '{output}'")
