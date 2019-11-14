@@ -27,7 +27,7 @@ def categorize_column(df, numeric_cat_column=None, inplace=False):
     return df_code
 
 
-def get_col2del(corr_feature, target_corr, useless_feature=None):
+def _get_col2del(corr_feature, target_corr, useless_feature=None):
     """
     Create a list of feature that can be deleted from a correlated feature list. For each correlated feature,
     one feature will be added to the del_feature list only if the features are not already in the list.
@@ -51,7 +51,7 @@ def get_col2del(corr_feature, target_corr, useless_feature=None):
     return del_feature
 
 
-def plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
+def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     fig1 = plt.figure()
     target_corr.sort_values().plot.bar()
     plt.title("Features correlation to the target")
@@ -93,10 +93,10 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
     feature_corr_list = feature_corr_matrix.where(np.tril(feature_corr_matrix, k=-1).astype(np.bool)).stack()
     feature_corr_list = feature_corr_list.sort_values(ascending=False)
     if verbose > 1 and not force:
-        plot_correlation(target_corr, feature_corr_list, feature_corr_matrix)
+        _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix)
     correlated_feature = feature_corr_list[feature_corr_list > threshold]
     end = False if not force else True
-    col2del = get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
+    col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
     while not end:
         if verbose > 0:
             print(f"Feature correlation to the target:\n{target_corr}")
@@ -109,7 +109,7 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
         if end != "yes" and end is not None:
             threshold = float(end)
             correlated_feature = feature_corr_list[feature_corr_list > threshold]
-            col2del = get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
+            col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
             end = False
     df_out = df.drop(columns=col2del)
     df_out.to_csv(output, sep=',', index=False)
