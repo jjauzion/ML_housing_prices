@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import copy
 
 from . import utils
+from . import label_encoder
 
 
 def categorize_column(df, numeric_cat_column=None, inplace=False):
@@ -68,24 +69,22 @@ def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     plt.show()
 
 
-def features_selection(dataset, output, target_col, numeric_cat_column=None, header=0,
-                       threshold=0.9, useless_feature=None, verbose=1, force=False):
+def features_selection(dataset, output, target_col, index_col, header=0, threshold=0.9, useless_feature=None,
+                       verbose=1, force=False):
     """
     Interactive filtering of correlated features
     :param dataset:             [str] Dataset file, csv format expected.
     :param output:              [str] output file
     :param target_col:          [str] target column name
-    :param numeric_cat_column:  [list of str] Name of the column that are categorical but with numeric values.
-                                Those column cannot be automatically detected as categorical and hence shall be defined.
+    :param index_col:           [int] Column of the dataset to use as the row labels of the DataFrame.
     :param header:              [int or None] Row number to use as the column names and start of the data.
     :param threshold:           [0 < float < 1] Correlation value above witch feature are considered correlated.
     :param useless_feature:     [list of str] Name of features identified as non informative for the prediction.
     :param force:               [Bool] If True, enforce "yes" answer to any prompt
     :param verbose:             [0 or 1 or 2] Verbosity level. Note that a verbosity of 0 will set force param to True
-    :return:
+    :return:                    [Pandas DataFrame] cleaned DataFrame
     """
-    df = pd.read_csv(dataset, header=header)
-    categorize_column(df, numeric_cat_column=numeric_cat_column, inplace=True)
+    df = pd.read_csv(dataset, header=header, index_col=index_col)
     corr = df.corr()
     feature_corr_matrix = corr.drop(target_col)
     feature_corr_matrix = feature_corr_matrix.drop(target_col, axis=1)
@@ -112,6 +111,7 @@ def features_selection(dataset, output, target_col, numeric_cat_column=None, hea
             col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
             end = False
     df_out = df.drop(columns=col2del)
-    df_out.to_csv(output, sep=',', index=False)
+    df_out.to_csv(output, sep=',', index=False if index_col is None else True)
     if verbose > 0:
         print("Dataset after correlation cleaning saved to '{}'".format(output))
+    return df_out

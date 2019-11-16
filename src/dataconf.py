@@ -12,8 +12,9 @@ class DataConf:
         self.cleaned_dataset = None
         self.nan_column_threshold = None
         self.cross_correlation_threshold = None
-        self.numeric_cat_column = None
         self.feature_type = None
+        self.header = None
+        self.index_col = None
 
     def import_from_json(self, file):
         try:
@@ -26,8 +27,9 @@ class DataConf:
         self.cleaned_dataset = Path(conf["cleaned_dataset"])
         self.nan_column_threshold = conf["nan_column_threshold"]
         self.cross_correlation_threshold = conf["cross_correlation_threshold"]
-        self.numeric_cat_column = conf["numeric_cat_column"]
         self.feature_type = conf["feature_type"]
+        self.header = conf["header"]
+        self.index_col = conf["index_col"]
 
     def __repr__(self):
         ret = ""

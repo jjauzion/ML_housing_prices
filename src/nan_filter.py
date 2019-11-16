@@ -12,18 +12,19 @@ def nan_synthesis(df):
     return synthesis
 
 
-def nan_filter(dataset, output, header=0, threshold=0.005, force=False, verbosity=1):
+def nan_filter(dataset, output, header=0, index_col=None, threshold=0.005, force=False, verbosity=1):
     """
     Interactive filter of NaN value in a dataframe by deletion of columns and / or rows.
     :param dataset:     [str] dataset file, csv format expected.
     :param output:      [str] output file
     :param header:      [int or None] Row number to use as the column names and start of the data.
+    :param index_col:   [int] Column of the dataset to use as the row labels of the DataFrame.
     :param threshold:   [float] Percentage of NaN required for column deletion. Can be modified at run time.
     :param force:       [Bool] If True 'yes' answer is enforced at every user prompt request.
     :param verbosity:   [0 or 1 or 2] Verbosity level. Note that verbosity = 0 enforce yes answer
                         as does the force parameter.
     """
-    df = pd.read_csv(dataset, header=header)
+    df = pd.read_csv(dataset, header=header, index_col=index_col)
     synthesis = nan_synthesis(df)
     end = "no" if not force and verbosity > 0 else "yes"
     synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
@@ -44,5 +45,5 @@ def nan_filter(dataset, output, header=0, threshold=0.005, force=False, verbosit
         print(synthesis)
         print("Deleting remaining observations with NaN (i.e. line)")
     df_clean = df_clean.dropna()
-    df_clean.to_csv(output, sep=",", index=False)
+    df_clean.to_csv(output, sep=",", index=False if index_col is None else True)
     print(f"Dataset after NaN filtering saved to '{output}'")
