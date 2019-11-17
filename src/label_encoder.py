@@ -2,9 +2,62 @@ import sklearn.preprocessing as preprocessing
 import pandas as pd
 from pathlib import Path
 import pickle
+import collections
+import numpy as np
 
 
-def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=False, drop_first=False):
+class LabelEncoder:
+
+    def __init__(self, classes=None):
+        self._class = []
+        if classes is not None:
+            self.fit(classes)
+
+    def fit(self, classes, order="keep"):
+        """
+
+        :param classes:
+        :param order: 'keep' -> keep ordered of the classes list and assign number in this order
+                      'sort' -> sort classes in ascending order first and then assign number in this order
+        """
+        if order == "sort":
+            self._class = sorted(list(set(classes)))
+        elif order == "keep":
+            self._class = list(collections.OrderedDict.fromkeys(classes))
+
+    def transform(self, classes, ignore_unknown_class=False):
+        try:
+            label = [float(self._class.index(elm)) for elm in classes]
+        except TypeError:
+            if isinstance(classes, bytes):
+                classes = classes.decode('utf-8')
+            label = float(self._class.index(classes))
+        except ValueError:
+            if ignore_unknown_class:
+                print("WARNING: One of the given name is not a valid class name.\nGot '{}' ; Valid class name : '{}'"
+                      .format(classes, self._class))
+                return np.nan
+            else:
+                print("WARNING: One of the given name is not a valid class name.\nGot '{}' ; Valid class name : '{}'"
+                      .format(classes, self._class))
+                raise ValueError("One of the given name is not a valid class name.\nGot '{}' ; Valid class name : '{}'"
+                                 .format(classes, self._class))
+        return label
+
+    def fit_transform(self, classes):
+        self.fit(classes)
+        return self.transform(classes)
+
+    def inverse_transform(self, label):
+        try:
+            classes = [self._class[int(index)] for index in label]
+        except IndexError:
+            raise IndexError("One of the label is out of range. Got '{}'".format(label))
+        return classes
+
+
+def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=False, drop_first=False,
+                  custom_scale=None):
     """
     Convert categorical features in a dataframe to code value.
     All columns (i.e. feature) with dtype="object" will be considered as categorical and converted.
@@ -20,6 +73,8 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
     :param inplace:     [Bool] If True modify the DataFrame in place.
     :param drop_first:  [Bool] If True, the 1st column of the one hot encoded dataframe is dropped to avoid
                         the dummy variables trap.
+    :param custom_scale:[dict] Custom scale for odrinal feature. If None, order will be lexicographical. Ex:
+                        {"feature_name": ["Excellent", "Average", "Bad"]}
     :return:            [Tuple: (pandas.DataFrame, dict)] Return the modified dataframe and the sklearn binarizer used
                         for the encoding in a dictionary of the following shape:
                         {"name_of_the_feature": encoder_function}
@@ -30,7 +85,9 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
         ordinal = []
     if nominal is None:
         nominal = []
-    cat_feature += ordinal + nominal
+    if custom_scale is None:
+        custom_scale = []
+    cat_feature = list(set(cat_feature + ordinal + nominal))
     if exclude is not None:
         for feature in exclude:
             try:
@@ -39,11 +96,19 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
                 pass
     labelizer = {}
     for feature in cat_feature:
-        if df[feature].isnull().sum() > 0:
-            raise ValueError(f"dataframe contains NaN in feature '{feature}'. Please remove NaN before label encoding")
+        try:
+            if df[feature].isnull().sum() > 0:
+                raise ValueError(f"df contains NaN in feature '{feature}'. Please remove NaN before label encoding")
+        except KeyError:
+            continue
         if feature in ordinal:
-            labelizer[feature] = preprocessing.LabelEncoder()
-            df[feature] = labelizer[feature].fit_transform(df[feature])
+            if feature in custom_scale:
+                labelizer[feature] = LabelEncoder()
+                labelizer[feature].fit(custom_scale[feature], order="keep")
+            else:
+                labelizer[feature] = preprocessing.LabelEncoder()
+                labelizer[feature].fit(df[feature])
+            df[feature] = labelizer[feature].transform(df[feature])
         else:
             labelizer[feature] = preprocessing.MultiLabelBinarizer()
             onehot = labelizer[feature].fit_transform(df[feature].values.reshape(-1, 1))

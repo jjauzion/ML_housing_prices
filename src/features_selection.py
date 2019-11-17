@@ -69,13 +69,13 @@ def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     plt.show()
 
 
-def features_selection(dataset, target_col, output=None, index_col=None, header=0, threshold=0.9, useless_feature=None,
+def features_selection(df, target_col, output=None, index_col=None, header=0, threshold=0.9, useless_feature=None,
                        verbose=1, force=False):
     """
     Interactive filtering of correlated features
-    :param dataset:             [str or pd DataFrame] dataset file, csv format expected or pandas DataFrame
-    :param output:              [str] output file
+    :param df:                  [Pandas DataFrame] input DataFrame
     :param target_col:          [str] target column name
+    :param output:              [str] output file to save the cleaned dataframe as a csv
     :param index_col:           [int] Column of the dataset to use as the row labels of the DataFrame.
     :param header:              [int or None] Row number to use as the column names and start of the data.
     :param threshold:           [0 < float < 1] Correlation value above witch feature are considered correlated.
@@ -84,7 +84,6 @@ def features_selection(dataset, target_col, output=None, index_col=None, header=
     :param verbose:             [0 or 1 or 2] Verbosity level. Note that a verbosity of 0 will set force param to True
     :return:                    [Pandas DataFrame] cleaned DataFrame
     """
-    df = dataset if isinstance(dataset, pd.DataFrame) else pd.read_csv(dataset, header=header, index_col=index_col)
     corr = df.corr()
     feature_corr_matrix = corr.drop(target_col)
     feature_corr_matrix = feature_corr_matrix.drop(target_col, axis=1)
@@ -110,7 +109,7 @@ def features_selection(dataset, target_col, output=None, index_col=None, header=
             correlated_feature = feature_corr_list[feature_corr_list > threshold]
             col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
             end = False
-    df_out = df.drop(columns=col2del)
+    df_out = df.drop(columns=col2del, errors="ignore")
     if output is not None:
         df_out.to_csv(output, sep=',', index=False if index_col is None else True,
                       header=False if header is None else True)

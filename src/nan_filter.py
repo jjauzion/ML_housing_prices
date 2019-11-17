@@ -12,21 +12,32 @@ def nan_synthesis(df):
     return synthesis
 
 
-def nan_filter(dataset, output=None, header=0, index_col=None, threshold=0.005, force=False, verbosity=1):
+def replace_nan_with(df, feature_dict):
+    df_clean = df.copy(deep=True)
+    for feature in feature_dict:
+        df_clean[feature] = df_clean[feature].fillna(feature_dict[feature])
+    return df_clean
+
+
+def nan_filter(df, output=None, header=0, index_col=None, threshold=0.005, replace_nan=None,
+               force=False, verbosity=1):
     """
     Interactive filter of NaN value in a dataframe by deletion of columns and / or rows.
-    :param dataset:     [str or pd DataFrame] dataset file, csv format expected or pandas DataFrame
+    :param df:          [pandas DataFrame] DataFrame to clean
     :param output:      [str] output file
     :param header:      [int or None] Row number to use as the column names and start of the data.
     :param index_col:   [int] Column of the dataset to use as the row labels of the DataFrame.
     :param threshold:   [float] Percentage of NaN required for column deletion. Can be modified at run time.
+    :param replace_nan: [dict] For each feature in the replace_nan dictionary, NaN is replaced with the provided value.
+                        Ex: {"feature_1": 0} will replace NaN in column "feature_1" by 0.
     :param force:       [Bool] If True 'yes' answer is enforced at every user prompt request.
     :param verbosity:   [0 or 1 or 2] Verbosity level. Note that verbosity = 0 enforce yes answer
                         as does the force parameter.
     :return:            [Pandas Dataframe] Cleaned dataframe
     """
-    df = dataset if isinstance(dataset, pd.DataFrame) else pd.read_csv(dataset, header=header, index_col=index_col)
-    synthesis = nan_synthesis(df)
+    if replace_nan is not None:
+        df_clean = replace_nan_with(df, replace_nan)
+    synthesis = nan_synthesis(df_clean)
     end = "no" if not force and verbosity > 0 else "yes"
     synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
     while end != "yes":
@@ -39,7 +50,7 @@ def nan_filter(dataset, output=None, header=0, index_col=None, threshold=0.005, 
             threshold = float(end)
             synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
             end = False
-    df_clean = df.drop(columns=synthesis[synthesis["Delete Feature"]].index, axis=1)
+    df_clean = df_clean.drop(columns=synthesis[synthesis["Delete Feature"]].index, axis=1)
     synthesis = nan_synthesis(df_clean)
     if verbosity > 0 and not force:
         print("\nRemaining NaN:")
