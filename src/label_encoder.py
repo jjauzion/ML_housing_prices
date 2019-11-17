@@ -4,7 +4,7 @@ from pathlib import Path
 import pickle
 
 
-def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=False):
+def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=False, drop_first=False):
     """
     Convert categorical features in a dataframe to code value.
     All columns (i.e. feature) with dtype="object" will be considered as categorical and converted.
@@ -18,6 +18,8 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
     :param ordinal:     [List of str] Name of the ordinal features (categorical feature with order in their value)
     :param exclude:     [List of str] Name of the features to exclude from the conversion.
     :param inplace:     [Bool] If True modify the DataFrame in place.
+    :param drop_first:  [Bool] If True, the 1st column of the one hot encoded dataframe is dropped to avoid
+                        the dummy variables trap.
     :return:            [Tuple: (pandas.DataFrame, dict)] Return the modified dataframe and the sklearn binarizer used
                         for the encoding in a dictionary of the following shape:
                         {"name_of_the_feature": encoder_function}
@@ -46,18 +48,20 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
             labelizer[feature] = preprocessing.MultiLabelBinarizer()
             onehot = labelizer[feature].fit_transform(df[feature].values.reshape(-1, 1))
             col_name = [f"{feature}_{i}" for i in labelizer[feature].classes_]
-            df_onehot = pd.DataFrame(onehot, columns=col_name)
-            df_onehot = df_onehot.drop(f"{feature}_{labelizer[feature].classes_[0]}", axis=1)
+            df_onehot = pd.DataFrame(onehot, columns=col_name, index=df.index)
+            if drop_first is True:
+                df_onehot = df_onehot.drop(f"{feature}_{labelizer[feature].classes_[0]}", axis=1)
             df[df_onehot.columns] = df_onehot
             df.drop(feature, axis=1, inplace=True)
     return df, labelizer
 
 
-def encode_cat_feature(dataset, output_dataset, output_label_file=None,
+def encode_cat_feature(dataset, output_dataset, output_label_file=None, drop_first=False,
                        header=0, index_col=None, ordinal_feature=None, nominal_feature=None, exclude_feature=None):
     df = pd.read_csv(dataset, header=header, index_col=index_col)
-    df, label = label_encoder(df, ordinal=ordinal_feature, nominal=nominal_feature, exclude=exclude_feature)
-    df.to_csv(output_dataset, index=False if index_col is None else True)
+    df, label = label_encoder(df, ordinal=ordinal_feature, nominal=nominal_feature, exclude=exclude_feature,
+                              drop_first=drop_first)
+    df.to_csv(output_dataset, index=False if index_col is None else True, header=False if header is None else True)
     if output_label_file is not None:
         with Path(output_label_file).open(mode='b') as fp:
             pickle.dump(label, fp)

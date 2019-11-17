@@ -15,6 +15,7 @@ class DataConf:
         self.feature_type = None
         self.header = None
         self.index_col = None
+        self.sep = ","
 
     def import_from_json(self, file):
         try:
@@ -30,6 +31,7 @@ class DataConf:
         self.feature_type = conf["feature_type"]
         self.header = conf["header"]
         self.index_col = conf["index_col"]
+        self.sep = conf["separator"]
 
     def __repr__(self):
         ret = ""

@@ -69,11 +69,11 @@ def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     plt.show()
 
 
-def features_selection(dataset, output, target_col, index_col, header=0, threshold=0.9, useless_feature=None,
+def features_selection(dataset, target_col, output=None, index_col=None, header=0, threshold=0.9, useless_feature=None,
                        verbose=1, force=False):
     """
     Interactive filtering of correlated features
-    :param dataset:             [str] Dataset file, csv format expected.
+    :param dataset:             [str or pd DataFrame] dataset file, csv format expected or pandas DataFrame
     :param output:              [str] output file
     :param target_col:          [str] target column name
     :param index_col:           [int] Column of the dataset to use as the row labels of the DataFrame.
@@ -84,7 +84,7 @@ def features_selection(dataset, output, target_col, index_col, header=0, thresho
     :param verbose:             [0 or 1 or 2] Verbosity level. Note that a verbosity of 0 will set force param to True
     :return:                    [Pandas DataFrame] cleaned DataFrame
     """
-    df = pd.read_csv(dataset, header=header, index_col=index_col)
+    df = dataset if isinstance(dataset, pd.DataFrame) else pd.read_csv(dataset, header=header, index_col=index_col)
     corr = df.corr()
     feature_corr_matrix = corr.drop(target_col)
     feature_corr_matrix = feature_corr_matrix.drop(target_col, axis=1)
@@ -111,7 +111,9 @@ def features_selection(dataset, output, target_col, index_col, header=0, thresho
             col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
             end = False
     df_out = df.drop(columns=col2del)
-    df_out.to_csv(output, sep=',', index=False if index_col is None else True)
-    if verbose > 0:
-        print("Dataset after correlation cleaning saved to '{}'".format(output))
+    if output is not None:
+        df_out.to_csv(output, sep=',', index=False if index_col is None else True,
+                      header=False if header is None else True)
+        if verbose > 0:
+            print("Dataset after correlation cleaning saved to '{}'".format(output))
     return df_out
