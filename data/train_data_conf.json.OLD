@@ -1,38 +1,217 @@
 {
-  "target_col": "SalePrice",
-  "raw_dataset": "data/train.csv",
-  "cleaned_dataset": "data/train_cleaned.csv",
-  "nan_values": ["-NaN", "-nan", "NULL", "NaN", "nan", "null", "NAN"],
-  "header": 0,
-  "index_col": 0,
-  "sep": ",",
-  "nan_column_threshold": 0.005,
-  "cross_correlation_threshold": 0.9,
-  "feature_type": {
-    "useless": [],
-    "nominal": ["MSSubClass", "YrSold", "MoSold"],
-    "ordinal": ["OverallCond"],
-    "binary": [],
-    "count": [],
-    "time": [],
-    "continuous": []
-  },
-  "replace_nan": {
-    "MiscFeature": "None",
-    "GarageQual": "None"
-  },
-  "ordinal_scale": {
-    "ExterQual": ["Ex", "Gd", "TA", "Fa", "Po"],
-    "ExterCond": ["Ex", "Gd", "TA", "Fa", "Po"],
-    "BsmtQual": ["Ex", "Gd", "TA", "Fa", "Po", "NA"],
-    "BsmtExposure": ["Gd", "Av", "Mn", "No", "NA"],
-    "HeatingQC": ["Ex", "Gd", "TA", "Fa", "Po"],
-    "KitchenQual": ["Ex", "Gd", "TA", "Fa", "Po"],
-    "Functional": ["Typ", "Min1", "Min2", "Mod", "Maj1", "Maj2", "Sev", "Sal"],
-    "FireplaceQu": ["Ex", "Gd", "TA", "Fa", "Po", "NA"],
-    "GarageFinish": ["Fin", "RFn", "Unf", "NA"],
-    "GarageQual": ["Ex", "Gd", "TA", "Fa", "Po", "NA"],
-    "GarageCond": ["Ex", "Gd", "TA", "Fa", "Po", "NA"],
-    "PoolQC": ["Ex", "Gd", "TA", "Fa", "NA"]
-  }
+    "target_col": "SalePrice",
+    "raw_dataset": "data/train.csv",
+    "cleaned_dataset": "data/train_cleaned.csv",
+    "nan_column_threshold": 0.005,
+    "cross_correlation_threshold": 0.9,
+    "feature_type": {
+        "useless": [
+            "PoolQC",
+            "Alley",
+            "Fence",
+            "FireplaceQu",
+            "LotFrontage",
+            "GarageYrBlt",
+            "GarageType",
+            "BsmtExposure",
+            "BsmtFinType2",
+            "BsmtFinType1",
+            "BsmtCond",
+            "MasVnrArea",
+            "MasVnrType"
+        ],
+        "nominal": [
+            "Utilities",
+            "LotConfig",
+            "BldgType",
+            "Heating",
+            "MSZoning",
+            "MiscFeature",
+            "CentralAir",
+            "SaleCondition",
+            "Exterior1st",
+            "LandContour",
+            "Exterior2nd",
+            "RoofStyle",
+            "SaleType",
+            "MoSold",
+            "YearBuilt",
+            "MSSubClass",
+            "YearRemodAdd",
+            "YrSold",
+            "HouseStyle",
+            "Electrical",
+            "Neighborhood",
+            "Street",
+            "LandSlope",
+            "Condition1",
+            "Foundation",
+            "Condition2",
+            "PavedDrive",
+            "LotShape",
+            "RoofMatl"
+        ],
+        "ordinal": [
+            "GarageCond",
+            "GarageFinish",
+            "ExterCond",
+            "BsmtQual",
+            "Functional",
+            "KitchenQual",
+            "ExterQual",
+            "HeatingQC",
+            "GarageQual"
+        ],
+        "binary": [],
+        "count": [],
+        "time": [],
+        "continuous": [
+            "BsmtUnfSF",
+            "BsmtFinSF1",
+            "LowQualFinSF",
+            "BsmtFinSF2",
+            "3SsnPorch",
+            "GrLivArea",
+            "EnclosedPorch",
+            "ScreenPorch",
+            "KitchenAbvGr",
+            "MiscVal",
+            "2ndFlrSF",
+            "LotArea",
+            "FullBath",
+            "SalePrice",
+            "GarageCars",
+            "OpenPorchSF",
+            "WoodDeckSF",
+            "HalfBath",
+            "BedroomAbvGr",
+            "1stFlrSF",
+            "OverallCond",
+            "BsmtHalfBath",
+            "OverallQual",
+            "Fireplaces",
+            "PoolArea",
+            "TotRmsAbvGrd",
+            "TotalBsmtSF",
+            "GarageArea",
+            "BsmtFullBath"
+        ]
+    },
+    "header": 0,
+    "index_col": 0,
+    "sep": ",",
+    "nan_values": [
+        "-NaN",
+        "-nan",
+        "NULL",
+        "NaN",
+        "nan",
+        "null",
+        "NAN"
+    ],
+    "replace_nan": {
+        "MiscFeature": "NA",
+        "GarageQual": "NA",
+        "GarageFinish": "NA",
+        "GarageCond": "NA",
+        "BsmtQual": "NA"
+    },
+    "ordinal_scale": {
+        "ExterQual": [
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "ExterCond": [
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "BsmtQual": [
+            "NA",
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "BsmtExposure": [
+            "NA",
+            "No",
+            "Mn",
+            "Av",
+            "Gd"
+        ],
+        "HeatingQC": [
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "KitchenQual": [
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "Functional": [
+            "Sal",
+            "Sev",
+            "Maj2",
+            "Maj1",
+            "Mod",
+            "Min2",
+            "Min1",
+            "Typ"
+        ],
+        "FireplaceQu": [
+            "NA",
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "GarageFinish": [
+            "NA",
+            "Unf",
+            "RFn",
+            "Fin"
+        ],
+        "GarageQual": [
+            "NA",
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "GarageCond": [
+            "NA",
+            "Po",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ],
+        "PoolQC": [
+            "NA",
+            "Fa",
+            "TA",
+            "Gd",
+            "Ex"
+        ]
+    },
+    "useless_line": [
+        [
+            1380
+        ]
+    ],
+    "useless": "useless"
 }

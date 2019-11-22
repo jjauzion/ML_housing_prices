@@ -1,6 +1,7 @@
 import pandas as pd
 
 from . import utils
+from . import dataconf
 
 
 def nan_synthesis(df):
@@ -12,31 +13,31 @@ def nan_synthesis(df):
     return synthesis
 
 
-def replace_nan_with(df, feature_dict):
+def replace_nan_with(df, nan_substitute):
     df_clean = df.copy(deep=True)
-    for feature in feature_dict:
-        df_clean[feature] = df_clean[feature].fillna(feature_dict[feature])
+    for feature in nan_substitute:
+        df_clean[feature] = df_clean[feature].fillna(nan_substitute[feature])
     return df_clean
 
 
-def nan_filter(df, output=None, header=0, index_col=None, threshold=0.005, replace_nan=None,
+def nan_filter(df, output=None, header=0, index_col=None, threshold=0.005, nan_substitute=None,
                force=False, verbosity=1):
     """
     Interactive filter of NaN value in a dataframe by deletion of columns and / or rows.
     :param df:          [pandas DataFrame] DataFrame to clean
-    :param output:      [str] output file
+    :param output:      [str] output file where the cleaned dataframe will be saved as a csv file
     :param header:      [int or None] Row number to use as the column names and start of the data.
     :param index_col:   [int] Column of the dataset to use as the row labels of the DataFrame.
     :param threshold:   [float] Percentage of NaN required for column deletion. Can be modified at run time.
-    :param replace_nan: [dict] For each feature in the replace_nan dictionary, NaN is replaced with the provided value.
-                        Ex: {"feature_1": 0} will replace NaN in column "feature_1" by 0.
+    :param nan_substitute:  [dict] For each feature in the nan_substitute, NaN is replaced with the provided value.
+                            Ex: {"feature_1": 0} will replace NaN in column "feature_1" by 0.
     :param force:       [Bool] If True 'yes' answer is enforced at every user prompt request.
     :param verbosity:   [0 or 1 or 2] Verbosity level. Note that verbosity = 0 enforce yes answer
                         as does the force parameter.
-    :return:            [Pandas Dataframe] Cleaned dataframe
+    :return:            [(Pandas Dataframe, list, list)] Tuple as follow:
+                        (Cleaned dataframe, list of feature name to be deleted, list of rows to be deleted)
     """
-    if replace_nan is not None:
-        df_clean = replace_nan_with(df, replace_nan)
+    df_clean = replace_nan_with(df, nan_substitute) if nan_substitute is not None else df.copy(deep=True)
     synthesis = nan_synthesis(df_clean)
     end = "no" if not force and verbosity > 0 else "yes"
     synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
@@ -50,15 +51,17 @@ def nan_filter(df, output=None, header=0, index_col=None, threshold=0.005, repla
             threshold = float(end)
             synthesis["Delete Feature"] = synthesis["Percentage"] >= threshold
             end = False
-    df_clean = df_clean.drop(columns=synthesis[synthesis["Delete Feature"]].index, axis=1)
+    feature_to_delete = synthesis[synthesis["Delete Feature"]].index.to_list()
+    df_clean = df_clean.drop(columns=feature_to_delete)
     synthesis = nan_synthesis(df_clean)
     if verbosity > 0 and not force:
         print("\nRemaining NaN:")
         print(synthesis)
         print("Deleting remaining observations with NaN (i.e. line)")
-    df_clean = df_clean.dropna()
+    line_to_delete = df_clean.index[df_clean.isnull().any(axis=1)].to_list()
+    df_clean = df_clean.drop(line_to_delete)
     if output is not None:
         df_clean.to_csv(output, sep=",", index=False if index_col is None else True,
                         header=True if header is not None else False)
         print(f"Dataset after NaN filtering saved to '{output}'")
-    return df_clean
+    return df_clean, feature_to_delete, line_to_delete

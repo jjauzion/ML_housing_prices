@@ -1,11 +1,12 @@
 from sklearn import preprocessing
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 from src import dataconf
 
 
-def explore_dataset(conf_file=None, dataframe=None, edit=False):
+def explore_dataset(conf_file=None, dataframe=None, edit=False, save_file=None):
     plt.ion()
     plt.show()
     if (conf_file is None and dataframe is None) or (conf_file is not None and dataframe is not None):
@@ -56,8 +57,8 @@ def explore_dataset(conf_file=None, dataframe=None, edit=False):
             ask = True
             while ask:
                 ask = False
-                ret = input(f'detected type : {dtype}.'
-                             f' Press enter to validate or choose another : 0=useless, 1=ordinal, 2=nominal, 3=continuous\n')
+                ret = input(f'detected type : {dtype}. Press'
+                            f' enter to validate or choose another : 0=useless, 1=ordinal, 2=nominal, 3=continuous\n')
                 if ret == "exit":
                     exit(0)
                 elif ret == "0":
@@ -74,6 +75,17 @@ def explore_dataset(conf_file=None, dataframe=None, edit=False):
             feature_type[dtype].append(col)
     if edit is True:
         dataset.feature_type = feature_type
-        dataset.to_json("data/train_data_conf.json")
+        if save_file is None:
+            print("WARNING: no save file as been given. The new conf won't be saved to a file.")
+            confirmation = input("Enter 'yes' to continue without save. Otherwise enter a valid file path")
+            if confirmation != "yes":
+                if Path(confirmation).is_file():
+                    save_file = confirmation
+                else:
+                    save_file = Path(conf_file).parent / f'{Path(conf_file).stem}_new{Path(conf_file).suffix}'
+                    print(f'"{confirmation}" is not a valid path file. New conf will be saved to "{save_file}"')
+    if save_file is not None:
+        dataset.to_json(save_file)
+        print(f'Data conf saved to {save_file}')
     print(f'df shape = {df.shape}')
     return dataset

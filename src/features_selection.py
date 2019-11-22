@@ -69,20 +69,19 @@ def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     plt.show()
 
 
-def features_selection(df, target_col, output=None, index_col=None, header=0, threshold=0.9, useless_feature=None,
-                       verbose=1, force=False):
+def correlated_features(df, target_col, output=None, index_col=None, header=0, threshold=0.9, verbose=1, force=False):
     """
-    Interactive filtering of correlated features
+    Interactive selection of correlated features.
+    Create a list of feature that can be deleted based on the correlation value
     :param df:                  [Pandas DataFrame] input DataFrame
     :param target_col:          [str] target column name
     :param output:              [str] output file to save the cleaned dataframe as a csv
     :param index_col:           [int] Column of the dataset to use as the row labels of the DataFrame.
     :param header:              [int or None] Row number to use as the column names and start of the data.
     :param threshold:           [0 < float < 1] Correlation value above witch feature are considered correlated.
-    :param useless_feature:     [list of str] Name of features identified as non informative for the prediction.
     :param force:               [Bool] If True, enforce "yes" answer to any prompt
     :param verbose:             [0 or 1 or 2] Verbosity level. Note that a verbosity of 0 will set force param to True
-    :return:                    [Pandas DataFrame] cleaned DataFrame
+    :return:                    [(Pandas DataFrame, list)] (cleaned DataFrame, list of column names that can be deleted)
     """
     corr = df.corr()
     feature_corr_matrix = corr.drop(target_col)
@@ -94,12 +93,12 @@ def features_selection(df, target_col, output=None, index_col=None, header=0, th
         _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix)
     correlated_feature = feature_corr_list[feature_corr_list > threshold]
     end = False if not force else True
-    col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
+    col2del = _get_col2del(correlated_feature, target_corr)
     while not end:
         if verbose > 0:
             print(f"Feature correlation to the target:\n{target_corr}")
             print(f"Correlated features above threshold (={threshold}):\n{correlated_feature}")
-            print(f"List of column that should be deleted: {col2del}")
+            print(f"List of correlated feature that can be deleted: {col2del}")
         print("\nDo you want to delete the feature selected above? This will create a new dataset, no data loss there!")
         end = utils.prompt_validation_or_new_threshold()
         if end == "exit":
@@ -107,7 +106,7 @@ def features_selection(df, target_col, output=None, index_col=None, header=0, th
         if end != "yes" and end is not None:
             threshold = float(end)
             correlated_feature = feature_corr_list[feature_corr_list > threshold]
-            col2del = _get_col2del(correlated_feature, target_corr, useless_feature=useless_feature)
+            col2del = _get_col2del(correlated_feature, target_corr)
             end = False
     df_out = df.drop(columns=col2del, errors="ignore")
     if output is not None:
@@ -115,4 +114,4 @@ def features_selection(df, target_col, output=None, index_col=None, header=0, th
                       header=False if header is None else True)
         if verbose > 0:
             print("Dataset after correlation cleaning saved to '{}'".format(output))
-    return df_out
+    return df_out, col2del
