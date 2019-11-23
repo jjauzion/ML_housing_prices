@@ -22,6 +22,7 @@ class DataConf:
         self.ordinal_scale = None
         self.useless_line = None
         self.useless = "useless"
+        self.transform = None
 
     def __repr__(self):
         ret = ""
@@ -48,6 +49,7 @@ class DataConf:
         self.replace_nan = conf["replace_nan"]
         self.ordinal_scale = conf["ordinal_scale"]
         self.useless_line = conf["useless_line"]
+        self.transform = conf["transform"]
 
     def to_json(self, file, verbosity=1):
         with Path(file).open(mode='w') as fp:

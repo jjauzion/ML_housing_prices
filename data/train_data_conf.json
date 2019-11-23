@@ -18,10 +18,13 @@
             "BsmtFinType1",
             "BsmtCond",
             "MasVnrArea",
-            "MasVnrType"
+            "Utilities",
+            "MasVnrType",
+            "YearRemodAdd",
+            "YearBuilt",
+            "YrSold"
         ],
         "nominal": [
-            "Utilities",
             "RoofStyle",
             "Neighborhood",
             "Heating",
@@ -36,8 +39,6 @@
             "Exterior1st",
             "Street",
             "LandSlope",
-            "YearBuilt",
-            "YrSold",
             "SaleCondition",
             "LandContour",
             "Electrical",
@@ -46,7 +47,6 @@
             "MiscFeature",
             "Exterior2nd",
             "LotShape",
-            "YearRemodAdd",
             "Condition2",
             "SaleType",
             "MoSold"
@@ -60,7 +60,8 @@
             "GarageFinish",
             "ExterQual",
             "HeatingQC",
-            "BsmtQual"
+            "BsmtQual",
+            "Fence"
         ],
         "binary": [],
         "count": [],
@@ -96,6 +97,20 @@
             "GarageArea",
             "SalePrice"
         ]
+    },
+    "transform": {
+        "Age": {
+            "from": ["YrSold", "YearBuilt"],
+            "operator": "-"
+        },
+        "AgeSinceRemod": {
+            "from": ["YrSold", "YearRemodAdd"],
+            "operator": "-"
+        },
+        "TotalSF": {
+            "from": ["TotalBsmtSF", "1stFlrSF", "2ndFlrSF"],
+            "operator": "+"
+        }
     },
     "header": 0,
     "index_col": 0,
@@ -206,6 +221,13 @@
             "TA",
             "Gd",
             "Ex"
+        ],
+        "Fence": [
+            "NA",
+            "MnWw",
+            "GdWo",
+            "MnPrv",
+            "GdPrv"
         ]
     },
     "useless_line": [
