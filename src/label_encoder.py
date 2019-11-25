@@ -57,10 +57,11 @@ class LabelEncoder:
 
 
 def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=False, drop_first=False,
-                  custom_scale=None):
+                  infer_nominal=True, custom_scale=None):
     """
     Convert categorical features in a dataframe to code value.
-    All columns (i.e. feature) with dtype="object" will be considered as categorical and converted.
+    If infer_nominal is True (default), all columns (i.e. feature) with dtype="object" will be considered as categorical
+    and converted.
     Use 'exclude' to exclude "object" feature from the convertion
     Use 'nominal' or 'ordinal' to add non "object" type feature to the convertion.
     By default all categorical features (dtype="objecct") are considered nominal.
@@ -73,14 +74,16 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
     :param inplace:     [Bool] If True modify the DataFrame in place.
     :param drop_first:  [Bool] If True, the 1st column of the one hot encoded dataframe is dropped to avoid
                         the dummy variables trap.
+    :param infer_nominal:[Bool] If True, all feature with dtype="object" will be considered as nominal and converted.
     :param custom_scale:[dict] Custom scale for odrinal feature. If None, order will be lexicographical. Ex:
                         {"feature_name": ["Excellent", "Average", "Bad"]}
-    :return:            [Tuple: (pandas.DataFrame, dict)] Return the modified dataframe and the sklearn binarizer used
-                        for the encoding in a dictionary of the following shape:
+    :return:            [Tuple: (pandas.DataFrame, dict, list)] Return the modified dataframe, the sklearn binarizer
+                        used for the encoding in a dictionary of the following shape:
                         {"name_of_the_feature": encoder_function}
+                        and the list of names of the new columns appended to the dataframe.
     """
     df = input_df if inplace else input_df.copy(deep=True)  # type: pd.DataFrame
-    cat_feature = list(df.select_dtypes("object"))
+    cat_feature = list(df.select_dtypes("object")) if infer_nominal is True else []
     if ordinal is None:
         ordinal = []
     if nominal is None:
@@ -95,6 +98,7 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
             except ValueError:
                 pass
     labelizer = {}
+    new_col = []
     for feature in cat_feature:
         try:
             if df[feature].isnull().sum() > 0:
@@ -116,9 +120,10 @@ def label_encoder(input_df, ordinal=None, nominal=None, exclude=None, inplace=Fa
             df_onehot = pd.DataFrame(onehot, columns=col_name, index=df.index)
             if drop_first is True:
                 df_onehot = df_onehot.drop(f"{feature}_{labelizer[feature].classes_[0]}", axis=1)
+            new_col += list(df_onehot.columns)
             df[df_onehot.columns] = df_onehot
             df.drop(feature, axis=1, inplace=True)
-    return df, labelizer
+    return df, labelizer, new_col
 
 
 def encode_cat_feature(dataset, output_dataset, output_label_file=None, drop_first=False,
