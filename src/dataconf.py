@@ -7,6 +7,7 @@ from . import error_lib
 class DataConf:
 
     def __init__(self):
+        # Required attribute (NOTE: not up to date)
         self.target_col = None
         self.raw_dataset = None
         self.cleaned_dataset = None
@@ -15,14 +16,15 @@ class DataConf:
         self.feature_type = None
         self.header = None
         self.index_col = None
-        self.sep = ","
-        self.nan_values = ["#N/A", "#N/A", "N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN",
-                           "N/A", "NA", "NULL", "NaN", "n/a", "nan", "null"]
         self.replace_nan = None
         self.ordinal_scale = None
         self.useless_line = None
-        self.useless = "useless"
         self.transform = None
+        # Optional attribute
+        self.sep = ","
+        self.nan_values = ["#N/A", "#N/A", "N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN",
+                           "N/A", "NA", "NULL", "NaN", "n/a", "nan", "null"]
+        self.useless = "useless"
 
     def __repr__(self):
         ret = ""
@@ -44,12 +46,15 @@ class DataConf:
         self.feature_type = conf["feature_type"]
         self.header = conf["header"]
         self.index_col = conf["index_col"]
-        self.sep = conf["sep"]
-        self.nan_values = conf["nan_values"]
         self.replace_nan = conf["replace_nan"]
         self.ordinal_scale = conf["ordinal_scale"]
         self.useless_line = conf["useless_line"]
         self.transform = conf["transform"]
+        try:
+            self.sep = conf["sep"]
+            self.nan_values = conf["nan_values"]
+        except KeyError:
+            pass
 
     def to_json(self, file, verbosity=1):
         with Path(file).open(mode='w') as fp:

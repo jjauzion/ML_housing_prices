@@ -36,6 +36,8 @@ if __name__ == "__main__":
         dataset.delete_duplicate()  # in case of bad input from user
         df = pd.read_csv(dataset.raw_dataset, header=dataset.header, index_col=dataset.index_col, sep=dataset.sep,
                          na_values=dataset.nan_values, keep_default_na=False)
+        for feature, value in dataset.replace_nan.items():
+            df[feature].fillna(value, inplace=True)
         print_("NaN filtering".center(40, "-"), args.verbosity)
         df_clean, deleted_col, deleted_line = nan_filter.nan_filter(df=df,
                                                                     output=None,
@@ -86,13 +88,17 @@ if __name__ == "__main__":
                                                                        force=args.force)
         dataset.change_feature_type(deleted_col, new_type=dataset.useless)
         binary_col = list(set(binary_col) - set(deleted_col))
-        df_clean = preprocess_feature.data_standardization(df_clean, except_col=binary_col)
+        df_clean, scale = preprocess_feature.data_standardization(df_clean, except_col=binary_col)
         dataset.to_json(output_conf, verbosity=args.verbosity)
         df_clean.to_csv(dataset.cleaned_dataset, sep=',', index=dataset.index_col, header=dataset.header)
         print_(f'New dataframe:\n{df_clean}', args.verbosity)
         print_(f'Dataframe saved to "{dataset.cleaned_dataset}"', args.verbosity)
-        X_train, y_train, X_test, y_true
-        predict =
+        X_train, y_train, X_test, y_true = preprocess_feature.split_dataset(df_clean, dataset.target_col, ratio=0.8)
+        model, y_pred = processing.fit(X_train, y_train, X_test, y_name="LinearReg")
+        print_(f'Result:\n{pd.concat((y_pred, y_true), axis=1).sort_values(by="LinearReg")}', args.verbosity)
+        test_score = model.score(X_test, y_true)
+        train_score = model.score(X_train, y_train)
+        print_(f'Test score = {test_score} ; Train score = {train_score}', args.verbosity)
     except IOError as err:
         print(f'Error: {err}')
         exit(0)
