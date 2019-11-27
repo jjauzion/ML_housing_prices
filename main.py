@@ -1,6 +1,6 @@
 import pandas as pd
 import argparse
-import matplotlib.pyplot as plt
+import numpy as np
 
 from src import dataconf
 from src import nan_filter
@@ -88,17 +88,30 @@ if __name__ == "__main__":
                                                                        force=args.force)
         dataset.change_feature_type(deleted_col, new_type=dataset.useless)
         binary_col = list(set(binary_col) - set(deleted_col))
-        df_clean, scale = preprocess_feature.data_standardization(df_clean, except_col=binary_col)
+        df_clean, scaleX, scaleY = preprocess_feature.data_standardization(df_clean, target_col=dataset.target_col,
+                                                                           except_col=binary_col)
         dataset.to_json(output_conf, verbosity=args.verbosity)
         df_clean.to_csv(dataset.cleaned_dataset, sep=',', index=dataset.index_col, header=dataset.header)
         print_(f'New dataframe:\n{df_clean}', args.verbosity)
         print_(f'Dataframe saved to "{dataset.cleaned_dataset}"', args.verbosity)
-        X_train, y_train, X_test, y_true = preprocess_feature.split_dataset(df_clean, dataset.target_col, ratio=0.8)
-        model, y_pred = processing.fit(X_train, y_train, X_test, y_name="LinearReg")
+        X_train, y_train, X_test, y_true = preprocess_feature.split_dataset(df_clean, dataset.target_col, ratio=0.8,
+                                                                            seed=None)
+        price_true = scaleY.inverse_transform(y_true)
+        # Linear Reg
+        _, y_pred = processing.fit_predict(X_train, y_train, X_test, model="LinearReg")
         print_(f'Result:\n{pd.concat((y_pred, y_true), axis=1).sort_values(by="LinearReg")}', args.verbosity)
-        test_score = model.score(X_test, y_true)
-        train_score = model.score(X_train, y_train)
-        print_(f'Test score = {test_score} ; Train score = {train_score}', args.verbosity)
+        price_pred_1 = scaleY.inverse_transform(y_pred)
+        print_(f'Result:\n{pd.concat((price_pred_1, price_true), axis=1)}', args.verbosity)
+        test_score_1 = processing.rmsle_score(price_true, price_pred_1, zero_truncature=True)
+        print_(f'Test score = {test_score_1}', args.verbosity)
+        # Ridge
+        _, y_pred = processing.fit_predict(X_train, y_train, X_test, model="Ridge", seed=0)
+        print_(f'Result:\n{pd.concat((y_pred, y_true), axis=1).sort_values(by="Ridge")}', args.verbosity)
+        price_pred = scaleY.inverse_transform(y_pred)
+        print_(f'Result:\n{pd.concat((price_pred, price_true), axis=1)}', args.verbosity)
+        test_score = processing.rmsle_score(price_true, price_pred, zero_truncature=True)
+        print_(f'Test score = {test_score}', args.verbosity)
+        print_(f'diff score = {test_score_1 - test_score}', verbosity=args.verbosity)
     except IOError as err:
         print(f'Error: {err}')
         exit(0)

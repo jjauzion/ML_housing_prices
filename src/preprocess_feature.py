@@ -1,6 +1,30 @@
 import pandas as pd
 import numpy as np
-import sklearn.preprocessing as skl
+from sklearn import preprocessing
+
+
+class StandardDFScaler(preprocessing.StandardScaler):
+
+    def fit_transform(self, X, y=None, **fit_params):
+        """
+        fit transform a pandas dataframe and return a pandas dataframe
+        """
+        std_df = super().fit_transform(X, y, **fit_params)
+        return pd.DataFrame(data=std_df, index=X.index, columns=X.columns)
+
+    def transform(self, X, copy=None):
+        """
+        transform a pandas dataframe and return a pandas dataframe
+        """
+        std_df = super().transform(X, copy)
+        return pd.DataFrame(data=std_df, index=X.index, columns=X.columns)
+
+    def inverse_transform(self, X, copy=None):
+        """
+        inverse transform a pandas dataframe and return a pandas dataframe
+        """
+        inv_df = super().inverse_transform(X, copy)
+        return pd.DataFrame(data=inv_df, index=X.index, columns=X.columns)
 
 
 def transform_feature(dataframe, transform_dic, delete_original=False):
@@ -27,7 +51,7 @@ def transform_feature(dataframe, transform_dic, delete_original=False):
     return to_delete
 
 
-def data_standardization(df, columns="all", except_col=None):
+def data_standardization(df, target_col, columns="all", except_col=None):
     """
     Standardize the given dataframe on the specified columns
         z = (x - u) / s
@@ -37,27 +61,34 @@ def data_standardization(df, columns="all", except_col=None):
     :return:                [tuple(pandas DataFrame, sklearn StandardScaler)] standardized dataframe and the scale used.
     """
     except_col = except_col if except_col is not None else []
-    df_std = df.copy(deep=True) if columns == "all" else df.copy(deep=True)[columns]
-    scale = skl.StandardScaler()
-    df_std.drop(columns=except_col, inplace=True)
-    array_std = scale.fit_transform(df_std)
-    df_std = pd.concat((pd.DataFrame(data=array_std, index=df_std.index, columns=df_std.columns), df[except_col]), axis=1)
-    return df_std, scale
+    df_tmp = df.copy(deep=True) if columns == "all" else df.copy(deep=True)[columns]
+    df_tmp.drop(columns=except_col, inplace=True)
+    df_y = df_tmp.loc[:, [target_col]]
+    df_x = df_tmp.drop(columns=target_col)
+    scaleX = StandardDFScaler()
+    scaleY = StandardDFScaler()
+    x_std = scaleX.fit_transform(df_x)
+    y_std = scaleY.fit_transform(df_y)
+    # x_std = pd.DataFrame(data=scaleX.fit_transform(df_x), index=df_x.index, columns=df_x.columns)
+    # y_std = pd.DataFrame(data=scaleY.fit_transform(df_y), index=df_y.index, columns=df_y.columns)
+    df_std = pd.concat((y_std, x_std, df.loc[:, except_col]), axis=1)
+    return df_std, scaleX, scaleY
 
 
-def split_dataset(df, target_col, ratio=0.8):
+def split_dataset(df, target_col, ratio=0.8, seed=None):
     """
     Split a dataset in two
     :param df:              [pandas DatafFrame] dataframe to be splitted
     :param target_col:      [str] Name of the target column
     :param ratio:           [float] ratio for the split. If ratio = 0.5 both output dataframe will have the same size
+    :param seed:            [int] seed value for the random splitting of the data set
     :return:                [tuple(dataframe, dataframe, dataframe, dataframe)] df_1_x, df_1_y, df_2_x, df_2_y
     """
     # df = pd.concat((pd.DataFrame(np.ones(shape=(df.shape[0], 1)), index=df.index, columns=["Bias"]), df), axis=1)
     # print(df)
-    df_1 = df.sample(frac=ratio)
+    df_1 = df.sample(frac=ratio, random_state=seed)
     df_2 = df.drop(df_1.index)
-    return df_1.drop(columns=target_col), df_1[target_col], df_2.drop(columns=target_col), df_2[target_col]
+    return df_1.drop(columns=target_col), df_1.loc[:, [target_col]], df_2.drop(columns=target_col), df_2.loc[:, [target_col]]
 
 
 if __name__ == "__main__":

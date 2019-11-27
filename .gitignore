@@ -2,6 +2,8 @@
 ############
 src/__pycache__/
 *.swp
+# Jupyter notebook BEURK!
+*.ipynb
 
 # Compiled source #
 ###################
