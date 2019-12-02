@@ -13,10 +13,14 @@ def nan_synthesis(df):
     return synthesis
 
 
-def replace_nan_with(df, nan_substitute):
+def replace_nan_with(df, nan_substitute, verbosity=1):
     df_clean = df.copy(deep=True)
     for feature in nan_substitute:
-        df_clean[feature] = df_clean[feature].fillna(nan_substitute[feature])
+        if feature not in df.columns:
+            if verbosity > 0:
+                print(f'WARNING: Can\'t apply NaN substitue for "{feature}": feature not found in the dataframe')
+        else:
+            df_clean[feature] = df_clean[feature].fillna(nan_substitute[feature])
     return df_clean
 
 

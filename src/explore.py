@@ -85,7 +85,6 @@ def explore_dataset(conf_file=None, dataframe=None, edit=False, save_file=None):
                     save_file = Path(conf_file).parent / f'{Path(conf_file).stem}_new{Path(conf_file).suffix}'
                     print(f'"{confirmation}" is not a valid path file. New conf will be saved to "{save_file}"')
     if save_file is not None:
-        dataset.to_json(save_file)
-        print(f'Data conf saved to {save_file}')
+        dataset.to_json(save_file, verbosity=1)
     print(f'df shape = {df.shape}')
     return dataset
