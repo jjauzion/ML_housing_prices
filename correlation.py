@@ -14,10 +14,10 @@ if __name__ == "__main__":
     args = utils.parse_main_args("file", "conf_output", "force", "verbosity", "transform", "encode", "scale", "drop")
     output_conf = args.conf_output if args.conf_output is not None else args.file
     dataset, df, _, _, _ = utils.import_df_from_dataconf(args.file,
-                                                drop=args.drop,
-                                                encode=args.encode,
-                                                transform=args.transform,
-                                                scale_data=args.standardize)
+                                                         drop=args.drop,
+                                                         encode=args.encode,
+                                                         transform=args.transform,
+                                                         scale=args.standardize)
     print_("Features Correletion".center(40, "-"), args.verbosity)
     df_clean, deleted_col = features_selection.correlated_features(df=df,
                                                                    output=None,

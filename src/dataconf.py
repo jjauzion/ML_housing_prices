@@ -21,6 +21,8 @@ class DataConf:
         self.useless_line = None
         self.transform = None
         # Optional attribute
+        self.skewness_threshold = 0.9
+        self.unskew = []
         self.sep = ","
         self.nan_values = ["#N/A", "#N/A", "N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN",
                            "N/A", "NA", "NULL", "NaN", "n/a", "nan", "null"]
@@ -33,28 +35,35 @@ class DataConf:
         return ret
 
     def import_from_json(self, file):
+        def get_val(attribute, conf, key, key_error="raise"):
+            try:
+                return conf[key]
+            except KeyError as err:
+                if key_error == "raise":
+                    raise err
+                else:
+                    return getattr(self, attribute)
         try:
             with Path(file).open(mode='r', encoding='utf-8') as fp:
                 conf = json.load(fp)
         except json.JSONDecodeError as err:
             raise error_lib.FileError(errtype=f"{err.__class__.__name__}", file=str(Path(file)), message=str(err))
-        self.target_col = conf["target_col"]
-        self.raw_dataset = conf["raw_dataset"]
-        self.cleaned_dataset = conf["cleaned_dataset"]
-        self.nan_column_threshold = conf["nan_column_threshold"]
-        self.cross_correlation_threshold = conf["cross_correlation_threshold"]
-        self.feature_type = conf["feature_type"]
-        self.header = conf["header"]
-        self.index_col = conf["index_col"]
-        self.replace_nan = conf["replace_nan"]
-        self.ordinal_scale = conf["ordinal_scale"]
-        self.useless_line = conf["useless_line"]
-        self.transform = conf["transform"]
-        try:
-            self.sep = conf["sep"]
-            self.nan_values = conf["nan_values"]
-        except KeyError:
-            pass
+        self.target_col = get_val("target_col", conf, "target_col")
+        self.raw_dataset = get_val("raw_dataset", conf, "raw_dataset")
+        self.cleaned_dataset = get_val("cleaned_dataset", conf, "cleaned_dataset")
+        self.nan_column_threshold = get_val("nan_column_threshold", conf, "nan_column_threshold")
+        self.cross_correlation_threshold = get_val("cross_correlation_threshold", conf, "cross_correlation_threshold")
+        self.feature_type = get_val("feature_type", conf, "feature_type")
+        self.header = get_val("header", conf, "header")
+        self.index_col = get_val("index_col", conf, "index_col")
+        self.replace_nan = get_val("replace_nan", conf, "replace_nan")
+        self.ordinal_scale = get_val("ordinal_scale", conf, "ordinal_scale")
+        self.useless_line = get_val("useless_line", conf, "useless_line")
+        self.transform = get_val("transform", conf, "transform")
+        self.skewness_threshold = get_val("skewness_threshold", conf, "skewness_threshold", key_error="ignore")
+        self.unskew = get_val("unskew", conf, "unskew", key_error="ignore")
+        self.sep = get_val("sep", conf, "sep", key_error="ignore")
+        self.nan_values = get_val("nan_values", conf, "nan_values", key_error="ignore")
 
     def to_json(self, file, verbosity=1):
         with Path(file).open(mode='w') as fp:

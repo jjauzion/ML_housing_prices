@@ -62,10 +62,15 @@ def _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix):
     tmp.plot.hist()
     plt.title("Features cross correlation coefficient")
     plt.xlabel("Correlation coeff value")
+    top10_corr = feature_corr_list.sort_values(ascending=False)[:10]
+    print("TOP 10 cross correlation:\n", top10_corr)
+    top10_corr = top10_corr.unstack()
+    top10_feature = set(top10_corr.index.to_list() + top10_corr.columns.to_list())
     fig2 = plt.figure()
-    sns.heatmap(feature_corr_matrix, square=True, linewidths=0.5, linecolor="Black", fmt=".1f", annot=True,
-                cbar_kws={"shrink": 0.70}, vmax=1, center=0, vmin=-1, cmap="PiYG")
-    plt.title("Cross correlation matrix")
+    top10_corr_matrix = feature_corr_matrix.loc[top10_feature, top10_feature]
+    sns.heatmap(top10_corr_matrix, square=True, linewidths=0.5, linecolor="Black",
+                fmt=".1f", annot=True, cbar_kws={"shrink": 0.70}, vmax=1, center=0, vmin=-1, cmap="PiYG")
+    plt.title("TOP 10 Cross correlation matrix")
     plt.show()
 
 
@@ -90,6 +95,11 @@ def correlated_features(df, target_col, output=None, index_col=None, header=0, t
     feature_corr_list = feature_corr_matrix.where(np.tril(feature_corr_matrix, k=-1).astype(np.bool)).stack()
     feature_corr_list = feature_corr_list.sort_values(ascending=False)
     if verbose > 1 and not force:
+        print("Scatter plot of features best correlated to the target:")
+        feature = list(target_corr.abs().sort_values(ascending=False)[:10].index)
+        utils.scatter_multi(df, target_col, x_column=feature, y_title=target_col, x_title=feature)
+        # for feature in target_corr.abs().sort_values(ascending=False)[:10].index:
+            # utils.scatter(df, target_col, x_column=feature, y_title=target_col, x_title=feature)
         _plot_correlation(target_corr, feature_corr_list, feature_corr_matrix)
     correlated_feature = feature_corr_list[feature_corr_list > threshold]
     end = False if not force else True

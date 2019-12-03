@@ -1,7 +1,6 @@
 from sklearn import linear_model
 from sklearn import metrics
 import pandas as pd
-import math
 import numpy as np
 
 
@@ -23,7 +22,6 @@ def rmsle_score(y_true, y_predict, zero_truncature=False, verbosity=1):
         y_predict = y_predict.mask(y_predict.iloc[:, 0] < 0, other=0)
     msle = metrics.mean_squared_log_error(y_true, y_predict)
     return np.sqrt(msle)
-    # return np.sqrt(metrics.mean_squared_log_error(y_true, y_predict))
 
 
 def fit_predict(X_train, y_train, X_test, model="LinearReg", seed=None, verbosity=1, **kwargs):

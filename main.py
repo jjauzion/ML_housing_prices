@@ -15,7 +15,7 @@ if __name__ == "__main__":
     output_conf = args.conf_output if args.conf_output is not None else args.file
     try:
         dataset, df_clean, label, scaleX, scaleY = utils.import_df_from_dataconf(args.file, drop=True, transform=True,
-                                                                                 encode=True, scale_data=True,
+                                                                                 encode=True, scale=True,
                                                                                  verbosity=args.verbosity)
         X_train, y_train, X_test, y_true = preprocess_feature.split_dataset(df_clean, dataset.target_col, ratio=0.8,
                                                                             seed=None)
