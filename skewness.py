@@ -5,6 +5,7 @@ from scipy import stats
 from src import features_selection
 from src import dataconf
 from src import utils
+from src import error_lib
 
 
 def print_(string, verbosity):
@@ -15,12 +16,16 @@ def print_(string, verbosity):
 if __name__ == "__main__":
     args = utils.parse_main_args("file", "conf_output", "verbosity", "transform", "encode", "scale", "drop", "unskew")
     output_conf = args.conf_output if args.conf_output is not None else args.file
-    dataset, df, _, _, _ = utils.import_df_from_dataconf(args.file,
-                                                         drop=args.drop,
-                                                         encode=args.encode,
-                                                         transform=args.transform,
-                                                         scale=args.standardize,
-                                                         unskew=args.unskew)
+    try:
+        dataset, df, _, _, _ = utils.import_df_from_dataconf(args.file,
+                                                             drop=args.drop,
+                                                             encode=args.encode,
+                                                             transform=args.transform,
+                                                             scale=args.standardize,
+                                                             unskew=args.unskew)
+    except error_lib.FileError as err:
+        print(f"{err}")
+        exit(0)
     print_("Skewness analysis".center(40, "-"), args.verbosity)
     numeric_feat = df.dtypes[df.dtypes != "object"].index
     skewed_feat = df[numeric_feat].apply(lambda x: stats.skew(x.dropna())).sort_values(ascending=False)

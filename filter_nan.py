@@ -1,8 +1,8 @@
 import pandas as pd
 
 from src import nan_filter
-from src import dataconf
 from src import utils
+from src import error_lib
 
 
 def print_(string, verbosity):
@@ -13,7 +13,11 @@ def print_(string, verbosity):
 if __name__ == "__main__":
     args = utils.parse_main_args("file", "conf_output", "force", "verbosity")
     output_conf = args.conf_output if args.conf_output is not None else args.file
-    dataset, df, _, _, _ = utils.import_df_from_dataconf(args.file, drop=True)
+    try:
+        dataset, df, _, _, _ = utils.import_df_from_dataconf(args.file, drop=True)
+    except error_lib.FileError as err:
+        print(f"{err}")
+        exit(0)
     print_("NaN filtering...".center(40, "-"), args.verbosity)
     df_clean, deleted_col, deleted_line = nan_filter.nan_filter(df=df,
                                                                 output=None,
